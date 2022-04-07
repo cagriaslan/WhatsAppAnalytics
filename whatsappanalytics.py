@@ -1,13 +1,9 @@
-# from transformers import AutoModelForSequenceClassification, AutoTokenizer, pipeline
-# # load model, it takes time since it loads over 500 MB model file
-# model = AutoModelForSequenceClassification.from_pretrained("savasy/bert-base-turkish-sentiment-cased")
-# tokenizer = AutoTokenizer.from_pretrained("savasy/bert-base-turkish-sentiment-cased")
-#
-# # create pipeline
-# sa= pipeline("sentiment-analysis", tokenizer=tokenizer, model=model)
-# p= sa("bu telefon modelleri çok kaliteli ve ayrıca ucuz ve  kolay bulunuyor")
+from transformers import AutoModelForSequenceClassification, AutoTokenizer, pipeline
+# load model, it takes time since it loads over 500 MB model file
+
 import datetime
 import pandas as pd
+from tqdm import tqdm
 import re
 
 
@@ -80,7 +76,35 @@ class WhatsAppAnalytics:
             self.previous_date = curr_date
         print(len(self.conversation_list))
 
+    def calculate_sentiment_scores(self):
+        model = AutoModelForSequenceClassification.from_pretrained("savasy/bert-base-turkish-sentiment-cased")
+        tokenizer = AutoTokenizer.from_pretrained("savasy/bert-base-turkish-sentiment-cased")
+        sentiment_list = list()
+        # create pipeline
+        sa = pipeline("sentiment-analysis", tokenizer=tokenizer, model=model)
+        sentiment_scores = sa(self.main_df["message"].to_list())
+        for each in tqdm(sentiment_scores):
+            if each['label'] == 'positive':
+                sentiment_list.append(each['score'])
+            elif each['label'] == 'negative':
+                sentiment_list.append(0-each['score'])
+            else:
+                print("problem var")
+
+        # for each in tqdm(self.main_df["message"]):
+        #     sentiment_score = sa(each)
+        #     if sentiment_score[0]['label'] == 'positive':
+        #         sentiment_list.append(sentiment_score[0]['score'])
+        #     elif sentiment_score[0]['label'] == 'negative':
+        #         sentiment_list.append(0-sentiment_score[0]['score'])
+        #     else:
+        #         print(sentiment_score)
+        self.main_df["sentiment_scores"] = sentiment_list
+
+        print(self.main_df.tail(200))
+
 
 analyzer = WhatsAppAnalytics("_chat.txt")
 analyzer.create_df_from_raw()
 analyzer.conversation_finder()
+analyzer.calculate_sentiment_scores()
