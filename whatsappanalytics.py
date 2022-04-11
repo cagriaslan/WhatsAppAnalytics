@@ -82,23 +82,23 @@ class WhatsAppAnalytics:
         sentiment_list = list()
         # create pipeline
         sa = pipeline("sentiment-analysis", tokenizer=tokenizer, model=model)
-        sentiment_scores = sa(self.main_df["message"].to_list())
-        for each in tqdm(sentiment_scores):
-            if each['label'] == 'positive':
-                sentiment_list.append(each['score'])
-            elif each['label'] == 'negative':
-                sentiment_list.append(0-each['score'])
-            else:
-                print("problem var")
-
-        # for each in tqdm(self.main_df["message"]):
-        #     sentiment_score = sa(each)
-        #     if sentiment_score[0]['label'] == 'positive':
-        #         sentiment_list.append(sentiment_score[0]['score'])
-        #     elif sentiment_score[0]['label'] == 'negative':
-        #         sentiment_list.append(0-sentiment_score[0]['score'])
+        # sentiment_scores = sa(self.main_df["message"].to_list())
+        # for each in tqdm(sentiment_scores):
+        #     if each['label'] == 'positive':
+        #         sentiment_list.append(each['score'])
+        #     elif each['label'] == 'negative':
+        #         sentiment_list.append(0-each['score'])
         #     else:
-        #         print(sentiment_score)
+        #         print("problem var")
+
+        for each in tqdm(self.main_df["message"]):
+            sentiment_score = sa(each)
+            if sentiment_score[0]['label'] == 'positive':
+                sentiment_list.append(sentiment_score[0]['score'])
+            elif sentiment_score[0]['label'] == 'negative':
+                sentiment_list.append(0-sentiment_score[0]['score'])
+            else:
+                print(sentiment_score)
         self.main_df["sentiment_scores"] = sentiment_list
 
         print(self.main_df.tail(200))
