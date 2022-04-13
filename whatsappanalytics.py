@@ -4,6 +4,7 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer, pipe
 import datetime
 import pandas as pd
 from tqdm import tqdm
+import time
 import re
 
 
@@ -92,19 +93,34 @@ class WhatsAppAnalytics:
         #         print("problem var")
 
         for each in tqdm(self.main_df["message"]):
-            sentiment_score = sa(each)
-            if sentiment_score[0]['label'] == 'positive':
-                sentiment_list.append(sentiment_score[0]['score'])
-            elif sentiment_score[0]['label'] == 'negative':
-                sentiment_list.append(0-sentiment_score[0]['score'])
-            else:
-                print(sentiment_score)
+            try:
+                sentiment_score = sa(each)
+                if sentiment_score[0]['label'] == 'positive':
+                    sentiment_list.append(sentiment_score[0]['score'])
+                elif sentiment_score[0]['label'] == 'negative':
+                    sentiment_list.append(0-sentiment_score[0]['score'])
+                else:
+                    sentiment_list.append("ELSE")
+                    print(sentiment_score)
+            except RuntimeError:
+                print(each)
+                sentiment_list.append("NONE")
+                continue
         self.main_df["sentiment_scores"] = sentiment_list
 
         print(self.main_df.tail(200))
 
+    def save_to_excel(self, filename):
+        self.main_df.to_excel("{}.xlsx".format(filename))
 
+    def load_from_excel(self, file_name):
+        self.main_df = pd.read_excel(file_name, index_col=0)
+
+
+start_time = time.time()
 analyzer = WhatsAppAnalytics("_chat.txt")
 analyzer.create_df_from_raw()
 analyzer.conversation_finder()
 analyzer.calculate_sentiment_scores()
+analyzer.save_to_excel("_chat")
+print("--- %s seconds ---" % (time.time() - start_time))
