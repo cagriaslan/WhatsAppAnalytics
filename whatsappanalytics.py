@@ -26,7 +26,6 @@ class WhatsAppAnalytics:
         self.conversation_list = []
         self.conversation_list_element = []
         self.conversation_delay = 300
-        # self.main_df = pd.DataFrame()
 
         self.reg_split = r'\[([\.\d]+\s[\d\:]+)\]'
         self.reg_date = r'([\.\d]+\s[\d\:]+)'
@@ -71,7 +70,6 @@ class WhatsAppAnalytics:
                 self.conversation_list_element.append(self.last_date)
             if len(self.conversation_list_element) == 2:
                 appender(self.conversation_list_element, self.conversation_list)
-                # conversation_list.append(conversation_list_element)
                 self.first_date = self.date_checker
                 self.conversation_list_element.clear()
             self.previous_date = curr_date
@@ -81,16 +79,8 @@ class WhatsAppAnalytics:
         model = AutoModelForSequenceClassification.from_pretrained("savasy/bert-base-turkish-sentiment-cased")
         tokenizer = AutoTokenizer.from_pretrained("savasy/bert-base-turkish-sentiment-cased")
         sentiment_list = list()
-        # create pipeline
+
         sa = pipeline("sentiment-analysis", tokenizer=tokenizer, model=model)
-        # sentiment_scores = sa(self.main_df["message"].to_list())
-        # for each in tqdm(sentiment_scores):
-        #     if each['label'] == 'positive':
-        #         sentiment_list.append(each['score'])
-        #     elif each['label'] == 'negative':
-        #         sentiment_list.append(0-each['score'])
-        #     else:
-        #         print("problem var")
 
         for each in tqdm(self.main_df["message"]):
             try:
